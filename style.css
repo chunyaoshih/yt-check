@@ -144,6 +144,8 @@ header h1 {
   height: 73px;
   object-fit: cover;
   flex-shrink: 0;
+  -webkit-touch-callout: none;
+  pointer-events: none;
   background: #000;
 }
 
