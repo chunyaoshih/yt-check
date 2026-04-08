@@ -122,6 +122,7 @@
             ${progressHtml}
             <div class="resume-info">繼續從 ${formatTime(resumePos)}</div>
           </div>
+          <button class="delete-btn" onclick="event.stopPropagation(); deleteVideo('${v.id}', ${JSON.stringify(escapeHtml(v.title))})" title="刪除">✕</button>
         </div>`;
     }).join('');
   }
@@ -201,6 +202,21 @@
       renderPlaylist(playlistData.videos || []);
     } catch (e) {
       status.textContent = `儲存失敗：${e.message}`;
+    }
+  }
+
+  // ── 刪除影片 ──────────────────────────────────────────
+  async function deleteVideo(videoId, title) {
+    if (!confirm(`確定要刪除「${title}」？\n（播放記錄與註解也會一併刪除）`)) return;
+    try {
+      const updated = await updatePlaylistData(data => {
+        data.videos = (data.videos || []).filter(v => v.id !== videoId);
+        return data;
+      });
+      playlistData = updated;
+      renderPlaylist(playlistData.videos || []);
+    } catch (e) {
+      alert(`刪除失敗：${e.message}`);
     }
   }
 

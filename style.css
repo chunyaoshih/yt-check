@@ -117,6 +117,27 @@ header h1 {
 .video-card:hover { background: var(--surface2); border-color: #444; }
 .video-card:active { background: #333; }
 
+.delete-btn {
+  flex-shrink: 0;
+  align-self: center;
+  margin-right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.video-card:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { background: rgba(239,83,80,0.15); color: var(--danger); }
+
 .thumbnail {
   width: 130px;
   height: 73px;
