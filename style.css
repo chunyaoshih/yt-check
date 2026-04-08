@@ -113,41 +113,71 @@ header h1 {
 }
 
 .video-card {
-  display: flex;
-  gap: 0;
+  position: relative;
   background: var(--surface);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   border: 1px solid var(--border);
   transition: background 0.15s, border-color 0.15s;
-  text-decoration: none;
   color: inherit;
 }
 .video-card:hover { background: var(--surface2); border-color: #444; }
 .video-card:active { background: #333; }
 
+/* 卡片內容包裝，長按時模糊 */
+.card-inner {
+  display: flex;
+  transition: filter 0.2s, opacity 0.2s;
+}
+.video-card.show-delete .card-inner {
+  filter: blur(3px);
+  opacity: 0.35;
+}
+
+/* 刪除按鈕：平時隱藏，長按後置中浮現 */
 .delete-btn {
-  flex-shrink: 0;
-  align-self: center;
-  margin-right: 10px;
-  width: 28px;
-  height: 28px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.7);
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: transparent;
+  background: var(--danger);
   border: none;
-  color: var(--text2);
-  font-size: 0.8rem;
+  color: #fff;
+  font-size: 1.3rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 2;
 }
-.video-card:hover .delete-btn { opacity: 1; }
-.video-card.show-delete .delete-btn { opacity: 1; }
-.delete-btn:hover { background: rgba(239,83,80,0.15); color: var(--danger); }
+.video-card.show-delete .delete-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+/* 桌面 hover：右上角小按鈕（不模糊） */
+@media (hover: hover) {
+  .video-card:hover .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    left: auto;
+    transform: none;
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba(239,83,80,0.85);
+  }
+}
 
 .thumbnail {
   width: 130px;

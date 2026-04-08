@@ -126,17 +126,19 @@
              ontouchmove="lpCancel()"
              ontouchend="lpCancel()"
              onclick="cardClick(this, '${v.id}')">
-          <img class="thumbnail"
-               src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg"
-               alt="${escapeHtml(v.title)}" loading="lazy">
-          <div class="video-info">
-            <div class="video-title">${escapeHtml(v.title)}</div>
-            <div class="platforms-info">
-              <span class="platform-badge android">Android: ${aPos ? formatTime(aPos.last_position) : '未播放'}</span>
-              <span class="platform-badge mac">Mac: ${mPos ? formatTime(mPos.last_position) : '未播放'}</span>
+          <div class="card-inner">
+            <img class="thumbnail"
+                 src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg"
+                 alt="${escapeHtml(v.title)}" loading="lazy">
+            <div class="video-info">
+              <div class="video-title">${escapeHtml(v.title)}</div>
+              <div class="platforms-info">
+                <span class="platform-badge android">Android: ${aPos ? formatTime(aPos.last_position) : '未播放'}</span>
+                <span class="platform-badge mac">Mac: ${mPos ? formatTime(mPos.last_position) : '未播放'}</span>
+              </div>
+              ${progressHtml}
+              <div class="resume-info">繼續從 ${formatTime(resumePos)}</div>
             </div>
-            ${progressHtml}
-            <div class="resume-info">繼續從 ${formatTime(resumePos)}</div>
           </div>
           <button class="delete-btn"
                   ontouchstart="event.stopPropagation()"
