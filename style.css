@@ -154,7 +154,7 @@ header h1 {
   pointer-events: auto;
 }
 
-/* 刪除按鈕：紅色圓形，縮放動畫浮現 */
+/* 刪除按鈕 */
 .delete-btn {
   padding: 10px 28px;
   border-radius: 8px;
