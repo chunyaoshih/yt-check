@@ -140,11 +140,14 @@
               <div class="resume-info">繼續從 ${formatTime(resumePos)}</div>
             </div>
           </div>
-          <button class="delete-btn"
-                  ontouchstart="event.stopPropagation()"
-                  ontouchend="event.stopPropagation(); event.preventDefault(); showDeleteModal('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
-                  onclick="event.stopPropagation(); showDeleteModal('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
-                  title="刪除">✕</button>
+          <div class="delete-overlay"
+               ontouchstart="event.stopPropagation()"
+               ontouchend="event.stopPropagation()"
+               onclick="event.stopPropagation()">
+            <button class="delete-btn"
+                    ontouchend="event.preventDefault(); showDeleteModal('${v.id}')"
+                    onclick="showDeleteModal('${v.id}')">✕</button>
+          </div>
         </div>`;
     }).join('');
   }
@@ -267,10 +270,11 @@
   // ── 刪除影片 ──────────────────────────────────────────
   let _pendingDeleteId = null;
 
-  function showDeleteModal(videoId, title) {
+  function showDeleteModal(videoId) {
+    const video = playlistData?.videos?.find(v => v.id === videoId);
     _pendingDeleteId = videoId;
     document.getElementById('delete-modal-msg').textContent =
-      `確定要刪除「${title}」？播放記錄與註解也會一併刪除。`;
+      `確定要刪除「${video?.title || videoId}」？播放記錄與註解也會一併刪除。`;
     document.getElementById('delete-modal').classList.remove('hidden');
     document.getElementById('overlay').classList.remove('hidden');
     // 收起卡片刪除模式

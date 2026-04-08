@@ -125,57 +125,70 @@ header h1 {
 .video-card:hover { background: var(--surface2); border-color: #444; }
 .video-card:active { background: #333; }
 
-/* 卡片內容包裝，長按時模糊 */
+/* 卡片內容，長按時模糊 */
 .card-inner {
   display: flex;
   transition: filter 0.2s, opacity 0.2s;
 }
 .video-card.show-delete .card-inner {
   filter: blur(3px);
-  opacity: 0.35;
+  opacity: 0.3;
 }
 
-/* 刪除按鈕：平時隱藏，長按後置中浮現 */
-.delete-btn {
+/* 刪除 overlay：覆蓋整張卡片，flexbox 置中按鈕 */
+.delete-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.7);
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--danger);
-  border: none;
-  color: #fff;
-  font-size: 1.3rem;
-  cursor: pointer;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s, transform 0.2s;
-  z-index: 2;
+  transition: opacity 0.2s;
+  border-radius: 12px;
 }
-.video-card.show-delete .delete-btn {
+.video-card.show-delete .delete-overlay {
   opacity: 1;
   pointer-events: auto;
-  transform: translate(-50%, -50%) scale(1);
 }
-/* 桌面 hover：右上角小按鈕（不模糊） */
+
+.delete-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.7);
+  transition: transform 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.video-card.show-delete .delete-btn {
+  transform: scale(1);
+}
+
+/* 桌面 hover：右上角小按鈕 */
 @media (hover: hover) {
+  .video-card:hover .delete-overlay {
+    opacity: 1;
+    pointer-events: auto;
+    background: transparent;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 6px;
+  }
   .video-card:hover .delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    left: auto;
-    transform: none;
     width: 26px;
     height: 26px;
     font-size: 0.75rem;
-    opacity: 1;
-    pointer-events: auto;
+    transform: scale(1);
     background: rgba(239,83,80,0.85);
+    box-shadow: none;
   }
 }
 
