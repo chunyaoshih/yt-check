@@ -5,8 +5,20 @@
       "url": "https://www.youtube.com/watch?v=zzHNH7c2HPo",
       "title": "What's Happening Taiwan I Cindy Jacobs",
       "added_at": "2026-04-08T12:40:38.325Z",
-      "platforms": {},
-      "history": [],
+      "platforms": {
+        "android": {
+          "last_position": 184,
+          "last_updated": "2026-04-08T12:41:22.911Z"
+        }
+      },
+      "history": [
+        {
+          "date": "2026-04-08T12:41:22.911Z",
+          "platform": "android",
+          "start": 0,
+          "end": 184
+        }
+      ],
       "annotations": [],
       "duration": 855
     }
