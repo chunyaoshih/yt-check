@@ -109,7 +109,11 @@
            </div>`
         : '';
       return `
-        <div class="video-card" onclick="location.href='player.html?id=${v.id}'">
+        <div class="video-card"
+             ontouchstart="lpStart(this)"
+             ontouchmove="lpCancel()"
+             ontouchend="lpCancel()"
+             onclick="cardClick(this, '${v.id}')">
           <img class="thumbnail"
                src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg"
                alt="${escapeHtml(v.title)}" loading="lazy">
@@ -207,6 +211,43 @@
       status.textContent = `儲存失敗：${e.message}`;
     }
   }
+
+  // ── 長按顯示刪除 ──────────────────────────────────────
+  let _lpTimer = null;
+  let _lpFired = false;
+
+  function lpStart(el) {
+    _lpFired = false;
+    _lpTimer = setTimeout(() => {
+      _lpFired = true;
+      document.querySelectorAll('.video-card.show-delete')
+        .forEach(c => c.classList.remove('show-delete'));
+      el.classList.add('show-delete');
+      navigator.vibrate?.(40);
+    }, 500);
+  }
+
+  function lpCancel() {
+    clearTimeout(_lpTimer);
+    _lpTimer = null;
+  }
+
+  function cardClick(el, videoId) {
+    if (_lpFired) { _lpFired = false; return; } // 長按後的合成 click，忽略
+    if (el.classList.contains('show-delete')) {
+      el.classList.remove('show-delete');        // 點別處收起刪除鍵
+      return;
+    }
+    location.href = 'player.html?id=' + videoId;
+  }
+
+  // 點卡片以外的地方也收起刪除鍵
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.video-card')) {
+      document.querySelectorAll('.video-card.show-delete')
+        .forEach(c => c.classList.remove('show-delete'));
+    }
+  });
 
   // ── 刪除影片 ──────────────────────────────────────────
   async function deleteVideo(videoId, title) {
