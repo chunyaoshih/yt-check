@@ -293,6 +293,8 @@ header h1 {
 .modal-actions button:hover { background: var(--border); }
 .modal-actions button.primary { background: var(--primary); color: #fff; }
 .modal-actions button.primary:hover { background: #c62828; }
+.modal-actions button.danger { background: var(--danger); color: #fff; }
+.modal-actions button.danger:hover { background: #c62828; }
 
 /* ── Overlay ── */
 #overlay {

@@ -60,6 +60,18 @@
   </div>
 </div>
 
+<!-- ── 刪除確認 Modal ── -->
+<div id="delete-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>刪除影片</h2>
+    <p id="delete-modal-msg" style="margin:8px 0 16px;color:var(--text2);font-size:0.9rem;"></p>
+    <div class="modal-actions">
+      <button onclick="hideDeleteModal()">取消</button>
+      <button class="danger" id="delete-confirm-btn">刪除</button>
+    </div>
+  </div>
+</div>
+
 <div id="overlay" class="hidden" onclick="closeAllModals()"></div>
 
 <script src="app.js"></script>
@@ -127,8 +139,9 @@
             <div class="resume-info">繼續從 ${formatTime(resumePos)}</div>
           </div>
           <button class="delete-btn"
-                  onclick="event.stopPropagation(); deleteVideo('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
-                  ontouchend="event.stopPropagation(); event.preventDefault(); deleteVideo('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
+                  ontouchstart="event.stopPropagation()"
+                  ontouchend="event.stopPropagation(); event.preventDefault(); showDeleteModal('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
+                  onclick="event.stopPropagation(); showDeleteModal('${v.id}', ${JSON.stringify(escapeHtml(v.title))})"
                   title="刪除">✕</button>
         </div>`;
     }).join('');
@@ -250,8 +263,29 @@
   });
 
   // ── 刪除影片 ──────────────────────────────────────────
-  async function deleteVideo(videoId, title) {
-    if (!confirm(`確定要刪除「${title}」？\n（播放記錄與註解也會一併刪除）`)) return;
+  let _pendingDeleteId = null;
+
+  function showDeleteModal(videoId, title) {
+    _pendingDeleteId = videoId;
+    document.getElementById('delete-modal-msg').textContent =
+      `確定要刪除「${title}」？播放記錄與註解也會一併刪除。`;
+    document.getElementById('delete-modal').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    // 收起卡片刪除模式
+    document.querySelectorAll('.video-card.show-delete')
+      .forEach(c => c.classList.remove('show-delete'));
+  }
+
+  function hideDeleteModal() {
+    _pendingDeleteId = null;
+    document.getElementById('delete-modal').classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
+  }
+
+  document.getElementById('delete-confirm-btn').addEventListener('click', async () => {
+    if (!_pendingDeleteId) return;
+    const videoId = _pendingDeleteId;
+    hideDeleteModal();
     try {
       const updated = await updatePlaylistData(data => {
         data.videos = (data.videos || []).filter(v => v.id !== videoId);
@@ -262,7 +296,7 @@
     } catch (e) {
       alert(`刪除失敗：${e.message}`);
     }
-  }
+  });
 
   // ── 設定 Modal ────────────────────────────────────────
   function showSettingsModal() {
@@ -299,7 +333,7 @@
       document.getElementById('overlay').classList.add('hidden');
     }
   }
-  function closeAllModals() { hideAddModal(); hideSettingsModal(); }
+  function closeAllModals() { hideAddModal(); hideSettingsModal(); hideDeleteModal(); }
 
   // ── 啟動 ──────────────────────────────────────────────
   init();
