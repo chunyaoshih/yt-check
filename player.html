@@ -346,7 +346,7 @@
       listEl.innerHTML = '<div class="empty">尚無記錄</div>';
       return;
     }
-    listEl.innerHTML = [...history].reverse().slice(0, 20).map(h => `
+    listEl.innerHTML = [...history].reverse().map(h => `
       <div class="history-item">
         <span class="platform-dot ${h.platform}"></span>
         <span class="history-platform">${h.platform === 'android' ? 'Android' : 'Mac'}</span>

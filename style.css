@@ -493,7 +493,13 @@ header h1 {
 .ann-dot:hover { transform: translate(-50%, -50%) scale(1.4); }
 
 /* ── History list ── */
-#history-list { display: flex; flex-direction: column; gap: 2px; }
+#history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 340px;
+  overflow-y: auto;
+}
 
 .history-item {
   display: flex;
