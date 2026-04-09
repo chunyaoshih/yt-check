@@ -454,8 +454,7 @@
     saveConfig(c);
     // 重置快取的 token client，讓它用新的 client id
     _gisTokenClient = null;
-    _driveAccessToken = null;
-    _driveTokenExpiry = 0;
+    clearCachedDriveToken();
     statusEl.textContent = ' 授權中...';
     try {
       await ensureDriveToken(false); // false = 顯示同意視窗（由使用者點擊觸發）

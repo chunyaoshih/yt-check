@@ -80,9 +80,39 @@ async function githubWrite(content, sha, msg = 'Update playlist') {
 
 // ── Google Drive API ─────────────────────────────────────
 
+const DRIVE_TOKEN_KEY = 'yt_tracker_drive_token';
 let _gisTokenClient = null;
 let _driveAccessToken = null;
 let _driveTokenExpiry = 0;
+
+// 從 localStorage 載入上次存的 token（跨頁面/重新整理重用）
+(function loadCachedDriveToken() {
+  try {
+    const raw = localStorage.getItem(DRIVE_TOKEN_KEY);
+    if (!raw) return;
+    const { token, expiry } = JSON.parse(raw);
+    if (token && expiry && Date.now() < expiry - 60000) {
+      _driveAccessToken = token;
+      _driveTokenExpiry = expiry;
+    } else {
+      localStorage.removeItem(DRIVE_TOKEN_KEY);
+    }
+  } catch (e) {}
+})();
+
+function saveCachedDriveToken(token, expiry) {
+  _driveAccessToken = token;
+  _driveTokenExpiry = expiry;
+  try {
+    localStorage.setItem(DRIVE_TOKEN_KEY, JSON.stringify({ token, expiry }));
+  } catch (e) {}
+}
+
+function clearCachedDriveToken() {
+  _driveAccessToken = null;
+  _driveTokenExpiry = 0;
+  try { localStorage.removeItem(DRIVE_TOKEN_KEY); } catch (e) {}
+}
 
 async function waitForGis(timeoutMs = 8000) {
   if (window.google?.accounts?.oauth2) return;
@@ -117,9 +147,9 @@ async function ensureDriveToken(silent = true) {
       if (resp.error) {
         return reject(new Error('Google 授權失敗：' + (resp.error_description || resp.error)));
       }
-      _driveAccessToken = resp.access_token;
-      _driveTokenExpiry = Date.now() + (resp.expires_in ?? 3600) * 1000;
-      resolve(_driveAccessToken);
+      const expiry = Date.now() + (resp.expires_in ?? 3600) * 1000;
+      saveCachedDriveToken(resp.access_token, expiry);
+      resolve(resp.access_token);
     };
     _gisTokenClient.requestAccessToken(silent ? { prompt: '' } : { prompt: 'consent' });
   });
@@ -133,8 +163,7 @@ async function driveApi(path, opts = {}) {
   );
   let resp = await doFetch(token);
   if (resp.status === 401) {
-    _driveAccessToken = null;
-    _driveTokenExpiry = 0;
+    clearCachedDriveToken();
     resp = await doFetch(await ensureDriveToken());
   }
   return resp;
