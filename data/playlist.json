@@ -1,3 +1,755 @@
 {
-  "videos": []
+  "videos": [
+    {
+      "id": "XOxi5qJ5Ftc",
+      "url": "https://www.youtube.com/watch?v=XOxi5qJ5Ftc",
+      "title": "#42【路加福音】【有聲聖經字幕版】中文和合本聖經100週年紀念",
+      "added_at": "2026-04-09T01:14:33.211Z",
+      "platforms": {
+        "android": {
+          "last_position": 4374,
+          "last_updated": "2026-04-09T02:53:17.638Z"
+        }
+      },
+      "history": [
+        {
+          "date": "2026-04-09T01:15:08.339Z",
+          "platform": "android",
+          "start": 0,
+          "end": 28
+        },
+        {
+          "date": "2026-04-09T01:15:18.665Z",
+          "platform": "android",
+          "start": 28,
+          "end": 45
+        },
+        {
+          "date": "2026-04-09T01:15:38.339Z",
+          "platform": "android",
+          "start": 45,
+          "end": 70
+        },
+        {
+          "date": "2026-04-09T01:16:08.338Z",
+          "platform": "android",
+          "start": 70,
+          "end": 122
+        },
+        {
+          "date": "2026-04-09T01:16:38.339Z",
+          "platform": "android",
+          "start": 122,
+          "end": 175
+        },
+        {
+          "date": "2026-04-09T01:17:08.345Z",
+          "platform": "android",
+          "start": 175,
+          "end": 227
+        },
+        {
+          "date": "2026-04-09T01:17:38.340Z",
+          "platform": "android",
+          "start": 227,
+          "end": 280
+        },
+        {
+          "date": "2026-04-09T01:18:08.339Z",
+          "platform": "android",
+          "start": 280,
+          "end": 332
+        },
+        {
+          "date": "2026-04-09T01:18:38.339Z",
+          "platform": "android",
+          "start": 332,
+          "end": 385
+        },
+        {
+          "date": "2026-04-09T01:18:46.193Z",
+          "platform": "android",
+          "start": 385,
+          "end": 387
+        },
+        {
+          "date": "2026-04-09T01:19:38.341Z",
+          "platform": "android",
+          "start": 380,
+          "end": 431
+        },
+        {
+          "date": "2026-04-09T01:20:08.339Z",
+          "platform": "android",
+          "start": 431,
+          "end": 483
+        },
+        {
+          "date": "2026-04-09T01:20:38.339Z",
+          "platform": "android",
+          "start": 483,
+          "end": 536
+        },
+        {
+          "date": "2026-04-09T01:21:08.340Z",
+          "platform": "android",
+          "start": 536,
+          "end": 588
+        },
+        {
+          "date": "2026-04-09T01:21:38.339Z",
+          "platform": "android",
+          "start": 588,
+          "end": 641
+        },
+        {
+          "date": "2026-04-09T01:22:08.338Z",
+          "platform": "android",
+          "start": 641,
+          "end": 693
+        },
+        {
+          "date": "2026-04-09T01:22:38.339Z",
+          "platform": "android",
+          "start": 693,
+          "end": 746
+        },
+        {
+          "date": "2026-04-09T01:23:08.341Z",
+          "platform": "android",
+          "start": 746,
+          "end": 798
+        },
+        {
+          "date": "2026-04-09T01:23:26.415Z",
+          "platform": "android",
+          "start": 798,
+          "end": 820
+        },
+        {
+          "date": "2026-04-09T01:23:38.339Z",
+          "platform": "android",
+          "start": 817,
+          "end": 826
+        },
+        {
+          "date": "2026-04-09T01:24:08.338Z",
+          "platform": "android",
+          "start": 826,
+          "end": 878
+        },
+        {
+          "date": "2026-04-09T01:24:38.338Z",
+          "platform": "android",
+          "start": 878,
+          "end": 931
+        },
+        {
+          "date": "2026-04-09T01:25:08.340Z",
+          "platform": "android",
+          "start": 931,
+          "end": 983
+        },
+        {
+          "date": "2026-04-09T01:25:38.340Z",
+          "platform": "android",
+          "start": 983,
+          "end": 1036
+        },
+        {
+          "date": "2026-04-09T01:26:08.339Z",
+          "platform": "android",
+          "start": 1036,
+          "end": 1088
+        },
+        {
+          "date": "2026-04-09T01:26:14.913Z",
+          "platform": "android",
+          "start": 1088,
+          "end": 1100
+        },
+        {
+          "date": "2026-04-09T01:27:17.212Z",
+          "platform": "android",
+          "start": 388,
+          "end": 1100
+        },
+        {
+          "date": "2026-04-09T01:27:38.339Z",
+          "platform": "android",
+          "start": 1100,
+          "end": 1134
+        },
+        {
+          "date": "2026-04-09T01:28:08.339Z",
+          "platform": "android",
+          "start": 1134,
+          "end": 1187
+        },
+        {
+          "date": "2026-04-09T01:28:38.338Z",
+          "platform": "android",
+          "start": 1187,
+          "end": 1239
+        },
+        {
+          "date": "2026-04-09T01:29:08.339Z",
+          "platform": "android",
+          "start": 1239,
+          "end": 1292
+        },
+        {
+          "date": "2026-04-09T01:29:38.338Z",
+          "platform": "android",
+          "start": 1292,
+          "end": 1344
+        },
+        {
+          "date": "2026-04-09T01:30:08.339Z",
+          "platform": "android",
+          "start": 1344,
+          "end": 1397
+        },
+        {
+          "date": "2026-04-09T01:30:38.341Z",
+          "platform": "android",
+          "start": 1397,
+          "end": 1449
+        },
+        {
+          "date": "2026-04-09T01:31:08.339Z",
+          "platform": "android",
+          "start": 1449,
+          "end": 1502
+        },
+        {
+          "date": "2026-04-09T01:31:38.342Z",
+          "platform": "android",
+          "start": 1502,
+          "end": 1554
+        },
+        {
+          "date": "2026-04-09T01:32:08.338Z",
+          "platform": "android",
+          "start": 1554,
+          "end": 1607
+        },
+        {
+          "date": "2026-04-09T01:32:38.338Z",
+          "platform": "android",
+          "start": 1607,
+          "end": 1659
+        },
+        {
+          "date": "2026-04-09T01:33:08.339Z",
+          "platform": "android",
+          "start": 1659,
+          "end": 1712
+        },
+        {
+          "date": "2026-04-09T01:33:38.339Z",
+          "platform": "android",
+          "start": 1712,
+          "end": 1764
+        },
+        {
+          "date": "2026-04-09T01:34:08.339Z",
+          "platform": "android",
+          "start": 1764,
+          "end": 1817
+        },
+        {
+          "date": "2026-04-09T01:34:38.338Z",
+          "platform": "android",
+          "start": 1817,
+          "end": 1869
+        },
+        {
+          "date": "2026-04-09T01:35:08.338Z",
+          "platform": "android",
+          "start": 1869,
+          "end": 1922
+        },
+        {
+          "date": "2026-04-09T01:35:16.572Z",
+          "platform": "android",
+          "start": 1922,
+          "end": 1936
+        },
+        {
+          "date": "2026-04-09T01:35:38.339Z",
+          "platform": "android",
+          "start": 1936,
+          "end": 1967
+        },
+        {
+          "date": "2026-04-09T01:36:08.345Z",
+          "platform": "android",
+          "start": 1967,
+          "end": 2019
+        },
+        {
+          "date": "2026-04-09T01:36:38.340Z",
+          "platform": "android",
+          "start": 2019,
+          "end": 2072
+        },
+        {
+          "date": "2026-04-09T01:37:08.339Z",
+          "platform": "android",
+          "start": 2072,
+          "end": 2124
+        },
+        {
+          "date": "2026-04-09T01:37:38.339Z",
+          "platform": "android",
+          "start": 2124,
+          "end": 2177
+        },
+        {
+          "date": "2026-04-09T01:38:08.347Z",
+          "platform": "android",
+          "start": 2177,
+          "end": 2229
+        },
+        {
+          "date": "2026-04-09T01:38:38.340Z",
+          "platform": "android",
+          "start": 2229,
+          "end": 2282
+        },
+        {
+          "date": "2026-04-09T01:39:08.338Z",
+          "platform": "android",
+          "start": 2282,
+          "end": 2334
+        },
+        {
+          "date": "2026-04-09T01:39:14.936Z",
+          "platform": "android",
+          "start": 2334,
+          "end": 2336
+        },
+        {
+          "date": "2026-04-09T01:40:08.340Z",
+          "platform": "android",
+          "start": 2276,
+          "end": 2301
+        },
+        {
+          "date": "2026-04-09T01:40:38.339Z",
+          "platform": "android",
+          "start": 2301,
+          "end": 2353
+        },
+        {
+          "date": "2026-04-09T01:40:58.913Z",
+          "platform": "android",
+          "start": 2353,
+          "end": 2389
+        },
+        {
+          "date": "2026-04-09T01:41:38.342Z",
+          "platform": "android",
+          "start": 2389,
+          "end": 2408
+        },
+        {
+          "date": "2026-04-09T01:42:08.338Z",
+          "platform": "android",
+          "start": 2408,
+          "end": 2461
+        },
+        {
+          "date": "2026-04-09T01:42:27.440Z",
+          "platform": "android",
+          "start": 2461,
+          "end": 2494
+        },
+        {
+          "date": "2026-04-09T01:43:08.339Z",
+          "platform": "android",
+          "start": 2494,
+          "end": 2542
+        },
+        {
+          "date": "2026-04-09T01:43:38.339Z",
+          "platform": "android",
+          "start": 2542,
+          "end": 2595
+        },
+        {
+          "date": "2026-04-09T01:44:08.339Z",
+          "platform": "android",
+          "start": 2595,
+          "end": 2647
+        },
+        {
+          "date": "2026-04-09T01:44:38.182Z",
+          "platform": "android",
+          "start": 2647,
+          "end": 2699
+        },
+        {
+          "date": "2026-04-09T01:45:08.339Z",
+          "platform": "android",
+          "start": 2699,
+          "end": 2745
+        },
+        {
+          "date": "2026-04-09T01:45:38.340Z",
+          "platform": "android",
+          "start": 2745,
+          "end": 2797
+        },
+        {
+          "date": "2026-04-09T01:46:08.339Z",
+          "platform": "android",
+          "start": 2797,
+          "end": 2850
+        },
+        {
+          "date": "2026-04-09T01:46:38.339Z",
+          "platform": "android",
+          "start": 2850,
+          "end": 2902
+        },
+        {
+          "date": "2026-04-09T01:47:08.338Z",
+          "platform": "android",
+          "start": 2902,
+          "end": 2955
+        },
+        {
+          "date": "2026-04-09T01:47:38.338Z",
+          "platform": "android",
+          "start": 2955,
+          "end": 3007
+        },
+        {
+          "date": "2026-04-09T01:47:47.518Z",
+          "platform": "android",
+          "start": 3007,
+          "end": 3023
+        },
+        {
+          "date": "2026-04-09T01:48:38.338Z",
+          "platform": "android",
+          "start": 2996,
+          "end": 2998
+        },
+        {
+          "date": "2026-04-09T01:48:44.007Z",
+          "platform": "android",
+          "start": 2998,
+          "end": 3006
+        },
+        {
+          "date": "2026-04-09T01:49:08.338Z",
+          "platform": "android",
+          "start": 3006,
+          "end": 3046
+        },
+        {
+          "date": "2026-04-09T01:49:38.338Z",
+          "platform": "android",
+          "start": 3046,
+          "end": 3099
+        },
+        {
+          "date": "2026-04-09T01:50:08.339Z",
+          "platform": "android",
+          "start": 3099,
+          "end": 3151
+        },
+        {
+          "date": "2026-04-09T01:50:38.340Z",
+          "platform": "android",
+          "start": 3151,
+          "end": 3204
+        },
+        {
+          "date": "2026-04-09T01:51:08.338Z",
+          "platform": "android",
+          "start": 3204,
+          "end": 3256
+        },
+        {
+          "date": "2026-04-09T01:51:38.339Z",
+          "platform": "android",
+          "start": 3256,
+          "end": 3309
+        },
+        {
+          "date": "2026-04-09T01:52:08.337Z",
+          "platform": "android",
+          "start": 3309,
+          "end": 3361
+        },
+        {
+          "date": "2026-04-09T01:52:38.343Z",
+          "platform": "android",
+          "start": 3361,
+          "end": 3414
+        },
+        {
+          "date": "2026-04-09T01:52:51.204Z",
+          "platform": "android",
+          "start": 3414,
+          "end": 3436
+        },
+        {
+          "date": "2026-04-09T01:53:38.338Z",
+          "platform": "android",
+          "start": 3437,
+          "end": 3490
+        },
+        {
+          "date": "2026-04-09T01:54:08.338Z",
+          "platform": "android",
+          "start": 3490,
+          "end": 3542
+        },
+        {
+          "date": "2026-04-09T01:54:11.391Z",
+          "platform": "android",
+          "start": 3542,
+          "end": 3547
+        },
+        {
+          "date": "2026-04-09T02:08:38.341Z",
+          "platform": "android",
+          "start": 3547,
+          "end": 3576
+        },
+        {
+          "date": "2026-04-09T02:09:08.336Z",
+          "platform": "android",
+          "start": 3576,
+          "end": 3624
+        },
+        {
+          "date": "2026-04-09T02:09:38.336Z",
+          "platform": "android",
+          "start": 3624,
+          "end": 3676
+        },
+        {
+          "date": "2026-04-09T02:10:08.335Z",
+          "platform": "android",
+          "start": 3676,
+          "end": 3729
+        },
+        {
+          "date": "2026-04-09T02:10:21.228Z",
+          "platform": "android",
+          "start": 3729,
+          "end": 3751
+        },
+        {
+          "date": "2026-04-09T02:11:38.335Z",
+          "platform": "android",
+          "start": 3751,
+          "end": 3755
+        },
+        {
+          "date": "2026-04-09T02:12:08.335Z",
+          "platform": "android",
+          "start": 3755,
+          "end": 3807
+        },
+        {
+          "date": "2026-04-09T02:12:38.335Z",
+          "platform": "android",
+          "start": 3807,
+          "end": 3860
+        },
+        {
+          "date": "2026-04-09T02:13:08.335Z",
+          "platform": "android",
+          "start": 3860,
+          "end": 3912
+        },
+        {
+          "date": "2026-04-09T02:13:38.336Z",
+          "platform": "android",
+          "start": 3912,
+          "end": 3965
+        },
+        {
+          "date": "2026-04-09T02:14:08.336Z",
+          "platform": "android",
+          "start": 3965,
+          "end": 4017
+        },
+        {
+          "date": "2026-04-09T02:14:18.247Z",
+          "platform": "android",
+          "start": 4017,
+          "end": 4034
+        },
+        {
+          "date": "2026-04-09T02:14:38.336Z",
+          "platform": "android",
+          "start": 4034,
+          "end": 4039
+        },
+        {
+          "date": "2026-04-09T02:14:54.455Z",
+          "platform": "android",
+          "start": 4039,
+          "end": 4067
+        },
+        {
+          "date": "2026-04-09T02:15:17.231Z",
+          "platform": "android",
+          "start": 2278,
+          "end": 2293
+        },
+        {
+          "date": "2026-04-09T02:15:39.363Z",
+          "platform": "android",
+          "start": 2293,
+          "end": 3182
+        },
+        {
+          "date": "2026-04-09T02:18:40.368Z",
+          "platform": "android",
+          "start": 3183,
+          "end": 4068
+        },
+        {
+          "date": "2026-04-09T02:23:28.277Z",
+          "platform": "android",
+          "start": 4068,
+          "end": 4070
+        },
+        {
+          "date": "2026-04-09T02:23:35.641Z",
+          "platform": "android",
+          "start": 4070,
+          "end": 4075
+        },
+        {
+          "date": "2026-04-09T02:24:05.644Z",
+          "platform": "android",
+          "start": 4075,
+          "end": 4105
+        },
+        {
+          "date": "2026-04-09T02:24:35.643Z",
+          "platform": "android",
+          "start": 4105,
+          "end": 4135
+        },
+        {
+          "date": "2026-04-09T02:25:05.643Z",
+          "platform": "android",
+          "start": 4135,
+          "end": 4165
+        },
+        {
+          "date": "2026-04-09T02:25:35.645Z",
+          "platform": "android",
+          "start": 4165,
+          "end": 4195
+        },
+        {
+          "date": "2026-04-09T02:26:05.643Z",
+          "platform": "android",
+          "start": 4195,
+          "end": 4225
+        },
+        {
+          "date": "2026-04-09T02:26:35.643Z",
+          "platform": "android",
+          "start": 4225,
+          "end": 4255
+        },
+        {
+          "date": "2026-04-09T02:27:05.643Z",
+          "platform": "android",
+          "start": 4255,
+          "end": 4285
+        },
+        {
+          "date": "2026-04-09T02:27:35.643Z",
+          "platform": "android",
+          "start": 4285,
+          "end": 4315
+        },
+        {
+          "date": "2026-04-09T02:28:05.644Z",
+          "platform": "android",
+          "start": 4315,
+          "end": 4345
+        },
+        {
+          "date": "2026-04-09T02:28:31.730Z",
+          "platform": "android",
+          "start": 4345,
+          "end": 4371
+        }
+      ],
+      "annotations": [
+        {
+          "id": "mnqsgz195u9gq",
+          "timestamp": 380,
+          "note": "應許",
+          "created_at": "2026-04-09T01:19:05.565Z"
+        },
+        {
+          "id": "mnqsr3y4z2h8n",
+          "timestamp": 1100,
+          "note": "施洗約翰教導",
+          "created_at": "2026-04-09T01:26:58.492Z"
+        },
+        {
+          "id": "mnqt7nbgwr1a1",
+          "timestamp": 2276,
+          "note": "好",
+          "created_at": "2026-04-09T01:39:50.093Z"
+        },
+        {
+          "id": "mnqt7ph11wdmu",
+          "timestamp": 2276,
+          "note": "好",
+          "created_at": "2026-04-09T01:39:52.885Z"
+        },
+        {
+          "id": "mnqt9mkho3njn",
+          "timestamp": 2389,
+          "note": "與罪人不同 與世界不同",
+          "created_at": "2026-04-09T01:41:22.433Z"
+        },
+        {
+          "id": "mnqtb7ipkhxyt",
+          "timestamp": 2494,
+          "note": "心 口",
+          "created_at": "2026-04-09T01:42:36.241Z"
+        },
+        {
+          "id": "mnqtijoekfioz",
+          "timestamp": 2983,
+          "note": "愛多赦免多",
+          "created_at": "2026-04-09T01:48:18.590Z"
+        },
+        {
+          "id": "mnqubm4wqo6k1",
+          "timestamp": 3751,
+          "note": "背十字架 喪生命得生命",
+          "created_at": "2026-04-09T02:10:54.801Z"
+        },
+        {
+          "id": "mnqug99lr799a",
+          "timestamp": 4034,
+          "note": "人子沒有枕頭",
+          "created_at": "2026-04-09T02:14:31.401Z"
+        }
+      ],
+      "duration": 9552,
+      "completion_percent": 45.8
+    }
+  ],
+  "_lastAddedCount": 2
 }
