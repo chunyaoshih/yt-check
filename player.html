@@ -58,6 +58,7 @@
 
 <div id="overlay" class="hidden" onclick="closeAnnotateModal()"></div>
 
+<script async src="https://accounts.google.com/gsi/client"></script>
 <script src="app.js"></script>
 <script>
   // ── 初始化 ────────────────────────────────────────────
@@ -88,7 +89,7 @@
 
   async function onPlayerReady(event) {
     try {
-      const result = await githubRead();
+      const result = await storageRead();
       videoData = result.data.videos.find(v => v.id === VIDEO_ID);
       if (!videoData) { location.href = 'index.html'; return; }
 

@@ -48,13 +48,33 @@
 <div id="settings-modal" class="modal hidden">
   <div class="modal-content">
     <h2>設定</h2>
-    <label>GitHub Personal Access Token</label>
-    <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
-    <small>需要 Contents 讀寫權限，儲存於本機不會上傳</small>
-    <label>Repository Owner</label>
-    <input type="text" id="owner-input" autocomplete="off">
-    <label>Repository Name</label>
-    <input type="text" id="repo-input" autocomplete="off">
+    <label>儲存後端</label>
+    <div class="backend-toggle">
+      <label><input type="radio" name="backend" value="github" onchange="onBackendChange()"> GitHub</label>
+      <label><input type="radio" name="backend" value="drive" onchange="onBackendChange()"> Google Drive</label>
+    </div>
+
+    <div id="github-fields">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+      <small>需要 Contents 讀寫權限，儲存於本機不會上傳</small>
+      <label>Repository Owner</label>
+      <input type="text" id="owner-input" autocomplete="off">
+      <label>Repository Name</label>
+      <input type="text" id="repo-input" autocomplete="off">
+    </div>
+
+    <div id="drive-fields" class="hidden">
+      <label>Google OAuth Client ID</label>
+      <input type="text" id="drive-client-id-input" placeholder="xxxxx.apps.googleusercontent.com" autocomplete="off">
+      <small>至 Google Cloud Console 建立 OAuth 2.0 Client ID（Web application），授權來源填此網站網址</small>
+      <div style="margin-top:8px">
+        <button type="button" onclick="connectGoogleDrive()">連結 Google Drive</button>
+        <span id="drive-connect-status"></span>
+      </div>
+      <small>檔案會儲存於你的 Drive → <b>yt-check/playlist.json</b></small>
+    </div>
+
     <label style="margin-top:12px">YouTube Data API Key（新增播放清單用）</label>
     <input type="password" id="yt-api-key-input" placeholder="AIza..." autocomplete="off">
     <small>至 Google Cloud Console 建立，選 YouTube Data API v3</small>
@@ -80,6 +100,7 @@
 
 <div id="overlay" class="hidden" onclick="closeAllModals()"></div>
 
+<script async src="https://accounts.google.com/gsi/client"></script>
 <script src="app.js"></script>
 <script>
   let playlistData = null;
@@ -89,11 +110,20 @@
   async function init() {
     const config = getConfig();
     updatePlatformButtons(config.platform);
-    if (!config.pat) {
-      document.getElementById('video-list').innerHTML =
-        '<div class="empty">請先點擊 ⚙ 設定 GitHub PAT</div>';
-      showSettingsModal();
-      return;
+    if (config.backend === 'drive') {
+      if (!config.driveClientId) {
+        document.getElementById('video-list').innerHTML =
+          '<div class="empty">請先點擊 ⚙ 設定 Google Drive Client ID</div>';
+        showSettingsModal();
+        return;
+      }
+    } else {
+      if (!config.pat) {
+        document.getElementById('video-list').innerHTML =
+          '<div class="empty">請先點擊 ⚙ 設定 GitHub PAT</div>';
+        showSettingsModal();
+        return;
+      }
     }
     await loadPlaylist();
   }
@@ -102,11 +132,14 @@
     const listEl = document.getElementById('video-list');
     listEl.innerHTML = '<div class="loading">載入中...</div>';
     try {
-      const result = await githubRead();
+      const result = await storageRead();
       playlistData = result.data;
       renderPlaylist(playlistData.videos || []);
     } catch (e) {
-      listEl.innerHTML = `<div class="error">載入失敗：${escapeHtml(e.message)}</div>`;
+      const hint = getConfig().backend === 'drive'
+        ? '<br><small>若是授權問題，請點擊 ⚙ 並按「連結 Google Drive」</small>'
+        : '';
+      listEl.innerHTML = `<div class="error">載入失敗：${escapeHtml(e.message)}${hint}</div>`;
     }
   }
 
@@ -391,22 +424,55 @@
   // ── 設定 Modal ────────────────────────────────────────
   function showSettingsModal() {
     const c = getConfig();
-    document.getElementById('pat-input').value        = c.pat      || '';
-    document.getElementById('owner-input').value      = c.owner    || 'chunyaoshih';
-    document.getElementById('repo-input').value       = c.repo     || 'my-first-repo';
-    document.getElementById('yt-api-key-input').value = c.ytApiKey || '';
-    document.getElementById('settings-status').textContent = '';
+    const backend = c.backend || 'github';
+    document.querySelector(`input[name="backend"][value="${backend}"]`).checked = true;
+    onBackendChange();
+    document.getElementById('pat-input').value              = c.pat          || '';
+    document.getElementById('owner-input').value            = c.owner        || 'chunyaoshih';
+    document.getElementById('repo-input').value             = c.repo         || 'my-first-repo';
+    document.getElementById('drive-client-id-input').value  = c.driveClientId || '';
+    document.getElementById('yt-api-key-input').value       = c.ytApiKey     || '';
+    document.getElementById('settings-status').textContent  = '';
+    document.getElementById('drive-connect-status').textContent = '';
     showModal('settings-modal');
-    setTimeout(() => document.getElementById('pat-input').focus(), 80);
   }
   function hideSettingsModal() { hideModal('settings-modal'); }
 
+  function onBackendChange() {
+    const backend = document.querySelector('input[name="backend"]:checked')?.value || 'github';
+    document.getElementById('github-fields').classList.toggle('hidden', backend !== 'github');
+    document.getElementById('drive-fields').classList.toggle('hidden', backend !== 'drive');
+  }
+
+  async function connectGoogleDrive() {
+    const statusEl = document.getElementById('drive-connect-status');
+    const clientId = document.getElementById('drive-client-id-input').value.trim();
+    if (!clientId) { statusEl.textContent = ' 請先填入 Client ID'; return; }
+    // 先暫存 client id 以便 ensureDriveToken 使用
+    const c = getConfig();
+    c.driveClientId = clientId;
+    saveConfig(c);
+    // 重置快取的 token client，讓它用新的 client id
+    _gisTokenClient = null;
+    _driveAccessToken = null;
+    _driveTokenExpiry = 0;
+    statusEl.textContent = ' 授權中...';
+    try {
+      await ensureDriveToken(false); // false = 顯示同意視窗（由使用者點擊觸發）
+      statusEl.textContent = ' ✓ 已連結';
+    } catch (e) {
+      statusEl.textContent = ' ✗ ' + e.message;
+    }
+  }
+
   function submitSettings() {
-    const c      = getConfig();
-    c.pat        = document.getElementById('pat-input').value.trim();
-    c.owner      = document.getElementById('owner-input').value.trim() || 'chunyaoshih';
-    c.repo       = document.getElementById('repo-input').value.trim()  || 'my-first-repo';
-    c.ytApiKey   = document.getElementById('yt-api-key-input').value.trim();
+    const c          = getConfig();
+    c.backend        = document.querySelector('input[name="backend"]:checked')?.value || 'github';
+    c.pat            = document.getElementById('pat-input').value.trim();
+    c.owner          = document.getElementById('owner-input').value.trim() || 'chunyaoshih';
+    c.repo           = document.getElementById('repo-input').value.trim()  || 'my-first-repo';
+    c.driveClientId  = document.getElementById('drive-client-id-input').value.trim();
+    c.ytApiKey       = document.getElementById('yt-api-key-input').value.trim();
     saveConfig(c);
     hideSettingsModal();
     loadPlaylist();

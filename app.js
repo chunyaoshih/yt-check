@@ -1,19 +1,25 @@
 // YouTube 播放追蹤器 - 核心邏輯
 const CONFIG_KEY = 'yt_tracker_config';
 const DATA_PATH = 'data/playlist.json';
+const DRIVE_FOLDER_NAME = 'yt-check';
+const DRIVE_FILE_NAME = 'playlist.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 // ── 設定管理 ────────────────────────────────────────────
 
 function getConfig() {
+  const defaults = {
+    pat: '', owner: 'chunyaoshih', repo: 'my-first-repo',
+    platform: 'mac',
+    backend: 'github',
+    driveClientId: '', driveFolderId: '', driveFileId: '',
+    ytApiKey: ''
+  };
   try {
     const s = localStorage.getItem(CONFIG_KEY);
-    if (s) {
-      const c = JSON.parse(s);
-      if (!c.platform) c.platform = 'mac';
-      return c;
-    }
+    if (s) return { ...defaults, ...JSON.parse(s) };
   } catch (e) {}
-  return { pat: '', owner: 'chunyaoshih', repo: 'my-first-repo', platform: 'mac' };
+  return defaults;
 }
 
 function saveConfig(config) {
@@ -72,13 +78,157 @@ async function githubWrite(content, sha, msg = 'Update playlist') {
   }
 }
 
+// ── Google Drive API ─────────────────────────────────────
+
+let _gisTokenClient = null;
+let _driveAccessToken = null;
+let _driveTokenExpiry = 0;
+
+function initGisTokenClient() {
+  const { driveClientId } = getConfig();
+  if (!driveClientId) throw new Error('請先設定 Google Drive Client ID');
+  if (!window.google?.accounts?.oauth2) {
+    throw new Error('Google Identity Services 尚未載入，請重新整理頁面');
+  }
+  _gisTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: driveClientId,
+    scope: DRIVE_SCOPE,
+    callback: () => {}
+  });
+}
+
+// 取得 Drive access token。silent=true 嘗試不彈出視窗刷新；失敗時拋錯。
+// silent=false 會顯示 Google 登入/同意視窗（必須由使用者點擊觸發，否則可能被瀏覽器阻擋）。
+async function ensureDriveToken(silent = true) {
+  if (_driveAccessToken && Date.now() < _driveTokenExpiry - 60000) {
+    return _driveAccessToken;
+  }
+  if (!_gisTokenClient) initGisTokenClient();
+  return new Promise((resolve, reject) => {
+    _gisTokenClient.callback = (resp) => {
+      if (resp.error) {
+        return reject(new Error('Google 授權失敗：' + (resp.error_description || resp.error)));
+      }
+      _driveAccessToken = resp.access_token;
+      _driveTokenExpiry = Date.now() + (resp.expires_in ?? 3600) * 1000;
+      resolve(_driveAccessToken);
+    };
+    _gisTokenClient.requestAccessToken(silent ? { prompt: '' } : { prompt: 'consent' });
+  });
+}
+
+async function driveApi(path, opts = {}) {
+  const token = await ensureDriveToken();
+  const doFetch = (tok) => fetch(
+    path.startsWith('http') ? path : `https://www.googleapis.com${path}`,
+    { ...opts, headers: { ...(opts.headers || {}), 'Authorization': `Bearer ${tok}` } }
+  );
+  let resp = await doFetch(token);
+  if (resp.status === 401) {
+    _driveAccessToken = null;
+    _driveTokenExpiry = 0;
+    resp = await doFetch(await ensureDriveToken());
+  }
+  return resp;
+}
+
+async function driveFindOrCreateFolder(name) {
+  const q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+  const r = await driveApi(`/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive`);
+  if (!r.ok) throw new Error(`Drive 查詢資料夾失敗 (${r.status})`);
+  const j = await r.json();
+  if (j.files?.length) return j.files[0].id;
+  const r2 = await driveApi('/drive/v3/files?fields=id', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  if (!r2.ok) throw new Error(`Drive 建立資料夾失敗 (${r2.status})`);
+  return (await r2.json()).id;
+}
+
+async function driveFindOrCreateFile(folderId, fileName) {
+  const q = `name='${fileName}' and '${folderId}' in parents and trashed=false`;
+  const r = await driveApi(`/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive`);
+  if (!r.ok) throw new Error(`Drive 查詢檔案失敗 (${r.status})`);
+  const j = await r.json();
+  if (j.files?.length) return j.files[0].id;
+  // 建立新檔案（metadata-only，隨後寫入初始內容）
+  const r2 = await driveApi('/drive/v3/files?fields=id', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: fileName, parents: [folderId], mimeType: 'application/json' })
+  });
+  if (!r2.ok) throw new Error(`Drive 建立檔案失敗 (${r2.status})`);
+  const fileId = (await r2.json()).id;
+  const r3 = await driveApi(`/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ videos: [] }, null, 2)
+  });
+  if (!r3.ok) throw new Error(`Drive 初始化檔案失敗 (${r3.status})`);
+  return fileId;
+}
+
+async function driveResolveFileId() {
+  const c = getConfig();
+  if (c.driveFileId) return c.driveFileId;
+  const folderId = c.driveFolderId || await driveFindOrCreateFolder(DRIVE_FOLDER_NAME);
+  const fileId = await driveFindOrCreateFile(folderId, DRIVE_FILE_NAME);
+  saveConfig({ ...getConfig(), driveFolderId: folderId, driveFileId: fileId });
+  return fileId;
+}
+
+async function driveRead() {
+  let fileId = await driveResolveFileId();
+  let r = await driveApi(`/drive/v3/files/${fileId}?alt=media`);
+  if (r.status === 404) {
+    // 快取的檔案被刪了，清掉快取重找
+    saveConfig({ ...getConfig(), driveFileId: '', driveFolderId: '' });
+    fileId = await driveResolveFileId();
+    r = await driveApi(`/drive/v3/files/${fileId}?alt=media`);
+  }
+  if (!r.ok) throw new Error(`Google Drive 讀取失敗 (${r.status})`);
+  const text = await r.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { videos: [] }; }
+  if (!data.videos) data.videos = [];
+  // Drive 版本不做樂觀鎖，sha 回 null
+  return { data, sha: null };
+}
+
+async function driveWrite(content, _sha) {
+  const fileId = await driveResolveFileId();
+  const r = await driveApi(`/upload/drive/v3/files/${fileId}?uploadType=media`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(content, null, 2)
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(() => ({}));
+    throw new Error(e.error?.message || `Google Drive 寫入失敗 (${r.status})`);
+  }
+}
+
+// ── 統一儲存介面（依 backend 切換 GitHub / Drive）──────
+
+async function storageRead() {
+  return getConfig().backend === 'drive' ? await driveRead() : await githubRead();
+}
+
+async function storageWrite(content, sha) {
+  return getConfig().backend === 'drive'
+    ? await driveWrite(content, sha)
+    : await githubWrite(content, sha);
+}
+
 // 讀取 → 修改 → 寫入，自動重試（處理並發衝突）
 async function updatePlaylistData(fn) {
   for (let i = 0; i < 3; i++) {
-    const { data, sha } = await githubRead();
+    const { data, sha } = await storageRead();
     const updated = fn(data);
     try {
-      await githubWrite(updated, sha);
+      await storageWrite(updated, sha);
       return updated;
     } catch (e) {
       if (i === 2) throw e;
