@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>播放器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back-btn">← 返回</a>
+  <span id="video-title-header">載入中...</span>
+  <div class="platform-toggle">
+    <button id="btn-android" class="platform-btn" onclick="setPlatform('android')">Android</button>
+    <button id="btn-mac"     class="platform-btn" onclick="setPlatform('mac')">Mac</button>
+  </div>
+</header>
+
+<!-- YouTube 播放器 (16:9) -->
+<div class="player-wrapper">
+  <div id="player"></div>
+</div>
+
+<!-- 控制列 -->
+<div id="player-controls">
+  <span id="current-time">0:00</span>
+  <button id="annotate-btn" onclick="showAnnotateModal()">＋ 加入註解</button>
+  <span id="save-status"></span>
+</div>
+
+<!-- 聆聽記錄 -->
+<div id="history-section">
+  <h3>聆聽記錄</h3>
+  <div id="timeline"></div>
+  <div id="history-list"><div class="empty">尚無記錄</div></div>
+</div>
+
+<!-- 時間點註解 -->
+<div id="annotations-section">
+  <h3>時間點註解</h3>
+  <div id="annotations-list"><div class="empty">尚無註解</div></div>
+</div>
+
+<!-- 新增 / 編輯 註解 Modal（共用） -->
+<div id="annotate-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2 id="annotate-modal-title">加入註解</h2>
+    <span id="annotate-time-display"></span>
+    <textarea id="annotate-text" placeholder="輸入疑問或筆記..."></textarea>
+    <div id="annotate-status"></div>
+    <div class="modal-actions">
+      <button onclick="closeAnnotateModal()">取消</button>
+      <button class="primary" id="annotate-submit-btn" onclick="submitAnnotation()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div id="overlay" class="hidden" onclick="closeAnnotateModal()"></div>
+
+<script src="app.js"></script>
+<script>
+  // ── 初始化 ────────────────────────────────────────────
+  const params  = new URLSearchParams(window.location.search);
+  const VIDEO_ID = params.get('id');
+  if (!VIDEO_ID) location.href = 'index.html';
+
+  let player             = null;  // YouTube Player 物件
+  let videoData          = null;  // 目前影片的資料
+  let sessionStart       = null;  // 本次播放起始位置（秒）
+  let isSaving           = false; // 防止並發儲存
+  let editingAnnotationId = null; // 目前編輯中的註解 ID
+  let pendingTimestamp   = null;  // 待加入註解的時間點
+
+  // ── YouTube IFrame API ───────────────────────────────
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '100%',
+      width:  '100%',
+      videoId: VIDEO_ID,
+      playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+      events: {
+        onReady:       onPlayerReady,
+        onStateChange: onPlayerStateChange
+      }
+    });
+  }
+
+  async function onPlayerReady(event) {
+    try {
+      const result = await githubRead();
+      videoData = result.data.videos.find(v => v.id === VIDEO_ID);
+      if (!videoData) { location.href = 'index.html'; return; }
+
+      document.getElementById('video-title-header').textContent = videoData.title;
+      document.title = videoData.title;
+
+      // 設定平台按鈕
+      updatePlatformButtons(getConfig().platform);
+
+      // 跳至最新進度（跨平台同步）
+      const resumePos = getResumePosition(videoData);
+      sessionStart = resumePos;
+      if (resumePos > 0) event.target.seekTo(resumePos, true);
+
+      // 儲存影片時長（如尚未記錄）
+      const dur = event.target.getDuration();
+      if (dur > 0 && !videoData.duration) {
+        updatePlaylistData(data => {
+          const v = data.videos.find(v => v.id === VIDEO_ID);
+          if (v) v.duration = Math.floor(dur);
+          return data;
+        }).then(updated => {
+          if (updated) videoData = updated.videos.find(v => v.id === VIDEO_ID);
+        }).catch(() => {});
+      }
+
+      renderAnnotations();
+      renderHistory();
+
+      // 每 0.5 秒更新時間顯示
+      setInterval(() => {
+        if (player?.getCurrentTime) {
+          document.getElementById('current-time').textContent =
+            formatTime(player.getCurrentTime());
+        }
+      }, 500);
+
+      // 每 30 秒播放中自動儲存
+      setInterval(() => {
+        if (player?.getPlayerState?.() === 1) autoSave(); // 1 = PLAYING
+      }, 30000);
+
+    } catch (e) {
+      document.getElementById('video-title-header').textContent = '載入失敗：' + e.message;
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    // YT.PlayerState.PAUSED = 2
+    if (event.data === 2) autoSave();
+  }
+
+  // ── 自動儲存 ──────────────────────────────────────────
+  async function autoSave() {
+    if (isSaving || !player || !videoData) return;
+    const pos = player.getCurrentTime?.();
+    if (pos == null) return;
+
+    isSaving = true;
+    const statusEl = document.getElementById('save-status');
+    statusEl.textContent = '儲存中...';
+
+    const platform = getConfig().platform;
+    const end   = Math.floor(pos);
+    const start = Math.floor(sessionStart ?? pos);
+    const now   = new Date().toISOString();
+
+    try {
+      const updated = await updatePlaylistData(data => {
+        const v = data.videos.find(v => v.id === VIDEO_ID);
+        if (!v) return data;
+        if (!v.platforms) v.platforms = {};
+        // 更新該平台最後位置
+        v.platforms[platform] = { last_position: end, last_updated: now };
+        // 記錄聆聽範圍（至少 2 秒才記錄）
+        if (end - start >= 2) {
+          if (!v.history) v.history = [];
+          v.history.push({ date: now, platform, start, end });
+        }
+        return data;
+      });
+      videoData    = updated.videos.find(v => v.id === VIDEO_ID);
+      sessionStart = pos;
+      statusEl.textContent = `✓ ${formatTime(pos)} 已儲存`;
+      setTimeout(() => { statusEl.textContent = ''; }, 2500);
+      renderHistory();
+    } catch (e) {
+      statusEl.textContent = '✗ 儲存失敗';
+      setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    }
+    isSaving = false;
+  }
+
+  // 切換到背景 / 關閉頁面時儲存
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') autoSave();
+  });
+  window.addEventListener('beforeunload', () => autoSave());
+
+  // ── 平台切換 ──────────────────────────────────────────
+  function setPlatform(p) {
+    const c = getConfig();
+    c.platform = p;
+    saveConfig(c);
+    updatePlatformButtons(p);
+  }
+  function updatePlatformButtons(p) {
+    document.getElementById('btn-android').classList.toggle('active', p === 'android');
+    document.getElementById('btn-mac').classList.toggle('active', p === 'mac');
+  }
+
+  // ── 跳至時間點 ────────────────────────────────────────
+  function seekTo(ts) {
+    if (!player) return;
+    player.seekTo(ts, true);
+    player.playVideo();
+  }
+
+  // ── 新增 / 編輯 註解 Modal ────────────────────────────
+  function showAnnotateModal() {
+    if (!player) return;
+    editingAnnotationId = null;
+    pendingTimestamp    = player.getCurrentTime();
+    player.pauseVideo(); // 暫停（同時觸發 autoSave）
+    document.getElementById('annotate-modal-title').textContent = '加入註解';
+    document.getElementById('annotate-time-display').textContent =
+      `時間點：${formatTime(pendingTimestamp)}`;
+    document.getElementById('annotate-text').value    = '';
+    document.getElementById('annotate-status').textContent = '';
+    document.getElementById('annotate-submit-btn').textContent = '儲存';
+    document.getElementById('annotate-modal').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    setTimeout(() => document.getElementById('annotate-text').focus(), 100);
+  }
+
+  function showEditModal(annotationId) {
+    const ann = videoData?.annotations?.find(a => a.id === annotationId);
+    if (!ann) return;
+    editingAnnotationId = annotationId;
+    pendingTimestamp    = ann.timestamp;
+    document.getElementById('annotate-modal-title').textContent = '編輯註解';
+    document.getElementById('annotate-time-display').textContent =
+      `時間點：${formatTime(ann.timestamp)}`;
+    document.getElementById('annotate-text').value    = ann.note;
+    document.getElementById('annotate-status').textContent = '';
+    document.getElementById('annotate-submit-btn').textContent = '更新';
+    document.getElementById('annotate-modal').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    setTimeout(() => document.getElementById('annotate-text').focus(), 100);
+  }
+
+  function closeAnnotateModal() {
+    document.getElementById('annotate-modal').classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
+  }
+
+  async function submitAnnotation() {
+    const note   = document.getElementById('annotate-text').value.trim();
+    const status = document.getElementById('annotate-status');
+    if (!note) { status.textContent = '請輸入內容'; return; }
+    status.textContent = '儲存中...';
+    try {
+      const updated = await updatePlaylistData(data => {
+        const v = data.videos.find(v => v.id === VIDEO_ID);
+        if (!v.annotations) v.annotations = [];
+        if (editingAnnotationId) {
+          // 編輯現有
+          const ann = v.annotations.find(a => a.id === editingAnnotationId);
+          if (ann) { ann.note = note; ann.updated_at = new Date().toISOString(); }
+        } else {
+          // 新增
+          v.annotations.push({
+            id:         generateId(),
+            timestamp:  Math.floor(pendingTimestamp),
+            note,
+            created_at: new Date().toISOString()
+          });
+          v.annotations.sort((a, b) => a.timestamp - b.timestamp);
+        }
+        return data;
+      });
+      videoData = updated.videos.find(v => v.id === VIDEO_ID);
+      closeAnnotateModal();
+      renderAnnotations();
+    } catch (e) {
+      status.textContent = `儲存失敗：${e.message}`;
+    }
+  }
+
+  async function deleteAnnotation(annotationId) {
+    if (!confirm('刪除這條註解？')) return;
+    try {
+      const updated = await updatePlaylistData(data => {
+        const v = data.videos.find(v => v.id === VIDEO_ID);
+        v.annotations = (v.annotations || []).filter(a => a.id !== annotationId);
+        return data;
+      });
+      videoData = updated.videos.find(v => v.id === VIDEO_ID);
+      renderAnnotations();
+    } catch (e) {
+      alert(`刪除失敗：${e.message}`);
+    }
+  }
+
+  // ── 渲染：註解列表 ────────────────────────────────────
+  function renderAnnotations() {
+    const listEl = document.getElementById('annotations-list');
+    const anns   = videoData?.annotations || [];
+    if (!anns.length) {
+      listEl.innerHTML = '<div class="empty">尚無註解</div>';
+      return;
+    }
+    listEl.innerHTML = anns.map(a => `
+      <div class="annotation-item">
+        <button class="time-btn" onclick="seekTo(${a.timestamp})">${formatTime(a.timestamp)}</button>
+        <div class="annotation-note">${escapeHtml(a.note)}</div>
+        <div class="annotation-actions">
+          <button class="icon-btn small" onclick="showEditModal('${a.id}')" title="編輯">✏️</button>
+          <button class="icon-btn small" onclick="deleteAnnotation('${a.id}')" title="刪除">🗑️</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── 渲染：聆聽記錄 + 時間軸 ──────────────────────────
+  function renderHistory() {
+    const listEl     = document.getElementById('history-list');
+    const timelineEl = document.getElementById('timeline');
+    const history    = videoData?.history || [];
+
+    // 時間軸視覺化（需要有 duration）
+    if (videoData?.duration && history.length) {
+      const dur  = videoData.duration;
+      const segs = history.map(h => {
+        const l = (h.start / dur * 100).toFixed(2);
+        const w = Math.max(0.4, (h.end - h.start) / dur * 100).toFixed(2);
+        return `<div class="segment ${h.platform}" style="left:${l}%;width:${w}%"
+                     title="${h.platform === 'android' ? 'Android' : 'Mac'}: ${formatTime(h.start)} ~ ${formatTime(h.end)}"></div>`;
+      }).join('');
+
+      // 在時間軸上標記註解點
+      const dots = (videoData.annotations || []).map(a => {
+        const l = (a.timestamp / dur * 100).toFixed(2);
+        return `<div class="ann-dot" style="left:${l}%"
+                     title="${escapeHtml(a.note)}" onclick="seekTo(${a.timestamp})"></div>`;
+      }).join('');
+
+      timelineEl.innerHTML = `<div class="timeline-bar">${segs}${dots}</div>`;
+    } else {
+      timelineEl.innerHTML = '';
+    }
+
+    // 記錄列表（最新在前，最多顯示 20 筆）
+    if (!history.length) {
+      listEl.innerHTML = '<div class="empty">尚無記錄</div>';
+      return;
+    }
+    listEl.innerHTML = [...history].reverse().slice(0, 20).map(h => `
+      <div class="history-item">
+        <span class="platform-dot ${h.platform}"></span>
+        <span class="history-platform">${h.platform === 'android' ? 'Android' : 'Mac'}</span>
+        <button class="history-time-btn" onclick="seekTo(${h.start})">${formatTime(h.start)}</button>
+        <span class="history-arrow">→</span>
+        <button class="history-time-btn" onclick="seekTo(${h.end})">${formatTime(h.end)}</button>
+        <span class="history-date">${new Date(h.date).toLocaleDateString('zh-TW')}</span>
+      </div>`).join('');
+  }
+</script>
+
+<!-- YouTube IFrame API（非同步載入，載入完成後呼叫 onYouTubeIframeAPIReady） -->
+<script async src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
