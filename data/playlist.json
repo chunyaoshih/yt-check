@@ -11,8 +11,8 @@
           "last_updated": "2026-04-09T02:53:17.638Z"
         },
         "mac": {
-          "last_position": 4080,
-          "last_updated": "2026-04-09T03:42:57.758Z"
+          "last_position": 4114,
+          "last_updated": "2026-04-09T03:43:26.706Z"
         }
       },
       "history": [
@@ -723,6 +723,12 @@
           "platform": "mac",
           "start": 4191,
           "end": 4320
+        },
+        {
+          "date": "2026-04-09T03:43:26.706Z",
+          "platform": "mac",
+          "start": 4080,
+          "end": 4114
         }
       ],
       "annotations": [
