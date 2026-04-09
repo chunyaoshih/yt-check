@@ -5,7 +5,12 @@
       "url": "https://www.youtube.com/watch?v=eq1PYzmKQh4",
       "title": "#01 【創世記】【有聲聖經字幕版】中文和合本聖經100週年紀念（修正版）Audio Bible",
       "added_at": "2026-04-08T16:23:20.196Z",
-      "platforms": {},
+      "platforms": {
+        "android": {
+          "last_position": 0,
+          "last_updated": "2026-04-09T01:13:21.428Z"
+        }
+      },
       "history": [],
       "annotations": [],
       "duration": 15853
