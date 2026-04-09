@@ -1,6 +1,5 @@
 // YouTube 播放追蹤器 - 核心邏輯
 const CONFIG_KEY = 'yt_tracker_config';
-const DATA_PATH = 'data/playlist.json';
 const DRIVE_FOLDER_NAME = 'yt-check';
 const DRIVE_FILE_NAME = 'playlist.json';
 const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
@@ -9,9 +8,7 @@ const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 function getConfig() {
   const defaults = {
-    pat: '', owner: 'chunyaoshih', repo: 'my-first-repo',
     platform: 'mac',
-    backend: 'github',
     driveClientId: '', driveFolderId: '', driveFileId: '',
     ytApiKey: ''
   };
@@ -24,58 +21,6 @@ function getConfig() {
 
 function saveConfig(config) {
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-}
-
-// ── GitHub API ───────────────────────────────────────────
-
-async function githubRead() {
-  const { pat, owner, repo } = getConfig();
-  if (!pat) throw new Error('請先設定 GitHub Personal Access Token');
-  const resp = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${DATA_PATH}`,
-    { headers: { 'Authorization': `token ${pat}`, 'Accept': 'application/vnd.github.v3+json' } }
-  );
-  if (resp.status === 404) return { data: { videos: [] }, sha: null };
-  if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    throw new Error(e.message || `GitHub 讀取失敗 (${resp.status})`);
-  }
-  const file = await resp.json();
-  const bytes = Uint8Array.from(atob(file.content.replace(/\s/g, '')), c => c.charCodeAt(0));
-  return {
-    data: JSON.parse(new TextDecoder('utf-8').decode(bytes)),
-    sha: file.sha
-  };
-}
-
-async function githubWrite(content, sha, msg = 'Update playlist') {
-  const { pat, owner, repo } = getConfig();
-  const body = {
-    message: msg,
-    content: (() => {
-      const bytes = new TextEncoder().encode(JSON.stringify(content, null, 2));
-      let bin = '';
-      bytes.forEach(b => { bin += String.fromCharCode(b); });
-      return btoa(bin);
-    })()
-  };
-  if (sha) body.sha = sha;
-  const resp = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${DATA_PATH}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${pat}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    }
-  );
-  if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    throw new Error(e.message || `GitHub 寫入失敗 (${resp.status})`);
-  }
 }
 
 // ── Google Drive API ─────────────────────────────────────
@@ -186,7 +131,7 @@ async function driveFindOrCreateFolder(name) {
 
 async function driveFindOrCreateFile(folderId, fileName) {
   const q = `name='${fileName}' and '${folderId}' in parents and trashed=false`;
-  const r = await driveApi(`/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive`);
+  const r = await driveApi(`/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&spaces=drive`);
   if (!r.ok) throw new Error(`Drive 查詢檔案失敗 (${r.status})`);
   const j = await r.json();
   if (j.files?.length) return j.files[0].id;
@@ -249,19 +194,12 @@ async function driveWrite(content, _sha) {
   }
 }
 
-// ── 統一儲存介面（依 backend 切換 GitHub / Drive）──────
+// ── 儲存介面 ─────────────────────────────────────────────
 
-async function storageRead() {
-  return getConfig().backend === 'drive' ? await driveRead() : await githubRead();
-}
+const storageRead = driveRead;
+const storageWrite = driveWrite;
 
-async function storageWrite(content, sha) {
-  return getConfig().backend === 'drive'
-    ? await driveWrite(content, sha)
-    : await githubWrite(content, sha);
-}
-
-// 讀取 → 修改 → 寫入，自動重試（處理並發衝突）
+// 讀取 → 修改 → 寫入，自動重試
 async function updatePlaylistData(fn) {
   for (let i = 0; i < 3; i++) {
     const { data, sha } = await storageRead();
