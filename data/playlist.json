@@ -7,8 +7,8 @@
       "added_at": "2026-04-09T01:14:33.211Z",
       "platforms": {
         "android": {
-          "last_position": 3542,
-          "last_updated": "2026-04-09T01:54:08.338Z"
+          "last_position": 3547,
+          "last_updated": "2026-04-09T01:54:11.391Z"
         }
       },
       "history": [
@@ -509,6 +509,12 @@
           "platform": "android",
           "start": 3490,
           "end": 3542
+        },
+        {
+          "date": "2026-04-09T01:54:11.391Z",
+          "platform": "android",
+          "start": 3542,
+          "end": 3547
         }
       ],
       "annotations": [
